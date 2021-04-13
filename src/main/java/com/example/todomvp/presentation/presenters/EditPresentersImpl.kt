@@ -12,8 +12,7 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 
 @InjectViewState
-class EditPresentersImpl(application: Application): MvpPresenter<EditView>(), EditPresenter{
-
+class EditPresentersImpl(application: Application) : MvpPresenter<EditView>(), EditPresenter {
     private val disposable: CompositeDisposable = CompositeDisposable()
     private val repository: TodoRepositoryImpl by lazy {
         TodoRepositoryImpl(application)
@@ -36,11 +35,4 @@ class EditPresentersImpl(application: Application): MvpPresenter<EditView>(), Ed
             .subscribe { next() }
         )
     }
-
-
-
-
-
-
-
 }

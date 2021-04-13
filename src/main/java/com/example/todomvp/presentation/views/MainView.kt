@@ -15,5 +15,4 @@ interface MainView: MvpView  {
     fun setChangeTheme()
 
 
-
 }

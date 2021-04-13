@@ -1,7 +1,5 @@
 package com.example.todomvp.presentation
 
-
-
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
@@ -19,12 +17,17 @@ import com.arellomobile.mvp.presenter.InjectPresenter
 import com.example.todomvp.R
 import com.example.todomvp.presentation.adapter.TodoAdapter
 import com.example.todomvp.data.model.Todo
+import com.example.todomvp.di.todoModule
 import com.example.todomvp.presentation.presenters.MainPresentersImpl
 import com.example.todomvp.presentation.views.MainView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import org.koin.android.ext.koin.androidContext
+import org.koin.android.ext.koin.androidLogger
+import org.koin.core.context.GlobalContext.startKoin
 
 class MainActivity : AppCompatActivity(), MainView {
     private val list: ArrayList<Todo> by lazy { arrayListOf<Todo>() }
+
     @SuppressLint("UseSwitchCompatOrMaterialCode")
     private lateinit var switchTheme: Switch
     private lateinit var recyclerView: RecyclerView
@@ -32,14 +35,17 @@ class MainActivity : AppCompatActivity(), MainView {
     private val CHEK_STATE = "CHEK_STATE"
     private val NIGHT_THEME = "NIGHT_THEME"
 
-
-
     @InjectPresenter
     lateinit var mainPresenter: MainPresentersImpl
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        startKoin {
+            androidLogger()
+            androidContext(this@MainActivity)
+            modules(todoModule)
+        }
+
         if (chekTheme()) {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
             setTheme(R.style.MyThemeDark)
@@ -51,7 +57,7 @@ class MainActivity : AppCompatActivity(), MainView {
         val adapter = TodoAdapter(list) { id ->
             startActivity(Intent(this@MainActivity, EditActivity::class.java).putExtra("id", id))
         }
-        mainPresenter= MainPresentersImpl(application)
+        mainPresenter = MainPresentersImpl(application)
         mainPresenter.getAllTodos().observe(this, Observer {
             list.clear()
             list.addAll(it!!)
@@ -60,17 +66,12 @@ class MainActivity : AppCompatActivity(), MainView {
         setFab()
         setRecyclerview(adapter)
         setChangeTheme()
-
-
     }
 
-
-     override fun setRecyclerview(adapter: TodoAdapter) {
+    override fun setRecyclerview(adapter: TodoAdapter) {
         recyclerView = findViewById(R.id.recycler_view)
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = adapter
-
-
         ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
             0,
             ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
@@ -82,6 +83,7 @@ class MainActivity : AppCompatActivity(), MainView {
             ): Boolean {
                 return false
             }
+
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 mainPresenter.onTaskSwiped(viewHolder.bindingAdapterPosition.toLong())
             }
@@ -97,7 +99,7 @@ class MainActivity : AppCompatActivity(), MainView {
         }
     }
 
-     override fun setChangeTheme() {
+    override fun setChangeTheme() {
         switchTheme = findViewById(R.id.switch_theme)
         if (chekTheme()) {
             switchTheme.isChecked = true
@@ -113,8 +115,7 @@ class MainActivity : AppCompatActivity(), MainView {
         }
     }
 
-
-private  fun saveTheme(state: Boolean) {
+    private fun saveTheme(state: Boolean) {
         val sharedPreferences: SharedPreferences =
             this.getSharedPreferences(CHEK_STATE, Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
@@ -122,7 +123,7 @@ private  fun saveTheme(state: Boolean) {
         editor.apply()
     }
 
-private fun chekTheme(): Boolean {
+    private fun chekTheme(): Boolean {
         val sharedPreferences: SharedPreferences =
             this.getSharedPreferences(CHEK_STATE, Context.MODE_PRIVATE)
         return sharedPreferences.getBoolean(NIGHT_THEME, false)

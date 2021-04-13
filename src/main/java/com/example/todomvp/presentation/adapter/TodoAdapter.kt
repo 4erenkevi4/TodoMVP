@@ -17,6 +17,7 @@ class TodoAdapter(
             .inflate(R.layout.item_todo, parent, false)
         return ViewHolder(view, click)
     }
+
     override fun getItemCount(): Int = list.size
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
@@ -24,6 +25,7 @@ class TodoAdapter(
         holder.bind(list[position])
         holder.oClick(item.id)
     }
+
     class ViewHolder(
         view: View,
         val onClick: (Long) -> Unit

@@ -10,15 +10,14 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 import com.example.todomvp.data.repository.TodoRepositoryImpl
 
-class MainPresentersImpl(application: Application):MvpPresenter<MainView>(), MainPresenter {
-
-    private val repository:TodoRepositoryImpl = TodoRepositoryImpl(application)
+class MainPresentersImpl(application: Application) : MvpPresenter<MainView>(), MainPresenter {
+    private val repository: TodoRepositoryImpl = TodoRepositoryImpl(application)
     private val disposable: CompositeDisposable = CompositeDisposable()
-    private val todos: LiveData<List<Todo>> by lazy {
+    private val todo: LiveData<List<Todo>> by lazy {
         repository.getAllTodos()
     }
-    override fun getAllTodos() = todos
 
+    override fun getAllTodos() = todo
 
     override fun onTaskSwiped(position: Long) {
         disposable.add(
@@ -27,11 +26,4 @@ class MainPresentersImpl(application: Application):MvpPresenter<MainView>(), Mai
                 .subscribe()
         )
     }
-
-
-
 }
-
-
-
-

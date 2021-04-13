@@ -8,7 +8,6 @@ import androidx.appcompat.app.AppCompatActivity
 import com.arellomobile.mvp.presenter.InjectPresenter
 import com.example.todomvp.R
 import com.example.todomvp.data.model.Todo
-import com.example.todomvp.presentation.presenters.EditPresenter
 import com.example.todomvp.presentation.presenters.EditPresentersImpl
 import com.example.todomvp.presentation.views.EditView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -19,16 +18,14 @@ class EditActivity : AppCompatActivity(), EditView {
 
     private lateinit var deleteFab: FloatingActionButton
     private lateinit var doneFab: FloatingActionButton
-
     private lateinit var descriptionText: EditText
     private lateinit var todoEditText: EditText
     private lateinit var dateView: TextView
     private var textData: TextView? = null
 
     @InjectPresenter
-    lateinit var editPresenter:EditPresentersImpl
-
-            override fun onCreate(savedInstanceState: Bundle?) {
+    lateinit var editPresenter: EditPresentersImpl
+    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_edit)
         deleteFab = findViewById(R.id.deleteFab)
@@ -36,8 +33,7 @@ class EditActivity : AppCompatActivity(), EditView {
         todoEditText = findViewById(R.id.todoEditText)
         descriptionText = findViewById(R.id.description_text)
         textData?.findViewById<TextView>(R.id.data)
-                editPresenter = EditPresentersImpl(application)
-
+        editPresenter = EditPresentersImpl(application)
         val id = intent.getLongExtra("id", -1L)
         if (id == -1L) {
             insertMode()
@@ -49,7 +45,6 @@ class EditActivity : AppCompatActivity(), EditView {
             showDatePicker()
         }
     }
-
 
     override fun showDatePicker() {
         val dateView: TextView = findViewById(R.id.date_view)
@@ -73,10 +68,6 @@ class EditActivity : AppCompatActivity(), EditView {
             ).show()
         }
     }
-
-
-
-
 
     override fun insertMode() {
         deleteFab.visibility = View.GONE
@@ -110,7 +101,8 @@ class EditActivity : AppCompatActivity(), EditView {
     }
 
     override fun updateTodo(id: Long) {
-        val todo = Todo(id,
+        val todo = Todo(
+            id,
             todoEditText.text.toString(), descriptionText.text.toString(), dateView.text.toString()
         )
         editPresenter.insert(todo) { finish() }
