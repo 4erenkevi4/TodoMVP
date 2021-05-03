@@ -8,6 +8,7 @@ import com.example.todomvp.presentation.adapter.TodoAdapter
 @StateStrategyType(value = AddToEndSingleStrategy::class)
 interface MainView: MvpView  {
 
+
     fun setRecyclerview( adapter: TodoAdapter)
 
     fun setFab()

@@ -9,21 +9,20 @@ import android.view.animation.AnimationUtils
 import android.widget.Switch
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.constraintlayout.motion.widget.MotionLayout
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.arellomobile.mvp.presenter.InjectPresenter
 import com.example.todomvp.R
-import com.example.todomvp.presentation.adapter.TodoAdapter
 import com.example.todomvp.data.model.Todo
-import com.example.todomvp.di.todoModule
+import com.example.todomvp.presentation.adapter.TodoAdapter
 import com.example.todomvp.presentation.presenters.MainPresentersImpl
 import com.example.todomvp.presentation.views.MainView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import org.koin.android.ext.koin.androidContext
-import org.koin.android.ext.koin.androidLogger
-import org.koin.core.context.GlobalContext.startKoin
+import java.util.*
+import kotlin.collections.ArrayList
 
 class MainActivity : AppCompatActivity(), MainView {
     private val list: ArrayList<Todo> by lazy { arrayListOf<Todo>() }
@@ -34,17 +33,13 @@ class MainActivity : AppCompatActivity(), MainView {
     private lateinit var fab: FloatingActionButton
     private val CHEK_STATE = "CHEK_STATE"
     private val NIGHT_THEME = "NIGHT_THEME"
+    lateinit var container: MotionLayout
 
     @InjectPresenter
     lateinit var mainPresenter: MainPresentersImpl
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        startKoin {
-            androidLogger()
-            androidContext(this@MainActivity)
-            modules(todoModule)
-        }
 
         if (chekTheme()) {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
@@ -73,21 +68,35 @@ class MainActivity : AppCompatActivity(), MainView {
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = adapter
         ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
-            0,
+            ItemTouchHelper.UP or ItemTouchHelper.DOWN,
             ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
         ) {
-            override fun onMove(
+            override fun getMovementFlags(
                 recyclerView: RecyclerView,
-                viewHolder: RecyclerView.ViewHolder,
-                target: RecyclerView.ViewHolder
+                viewHolder: RecyclerView.ViewHolder
+            ): Int {
+                val dragFlags = ItemTouchHelper.UP or ItemTouchHelper.DOWN
+                val swipeFlags = ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
+                return makeMovementFlags(dragFlags, swipeFlags)
+            }
+
+            override fun onMove(
+                p0: RecyclerView,
+                p1: RecyclerView.ViewHolder,
+                p2: RecyclerView.ViewHolder
             ): Boolean {
-                return false
+                val sourcePosition = p1.layoutPosition
+                val targetPosition = p2.layoutPosition
+                Collections.swap(list, sourcePosition, targetPosition)
+                adapter.notifyItemMoved(sourcePosition, targetPosition)
+                return true
             }
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 mainPresenter.onTaskSwiped(viewHolder.bindingAdapterPosition.toLong())
             }
-        }).attachToRecyclerView(recyclerView)
+        }
+        ).attachToRecyclerView(recyclerView)
     }
 
     override fun setFab() {
@@ -95,7 +104,41 @@ class MainActivity : AppCompatActivity(), MainView {
         fab = findViewById(R.id.fab)
         fab.startAnimation(animForFab)
         fab.setOnClickListener {
-            startActivity(Intent(this@MainActivity, EditActivity::class.java))
+            container = findViewById(R.id.motion_container)
+            container.transitionToEnd()
+            container.setTransitionListener(
+                object : MotionLayout.TransitionListener {
+                    override fun onTransitionStarted(p0: MotionLayout?, p1: Int, p2: Int) {
+                    }
+
+                    override fun onTransitionChange(
+                        motionLayout: MotionLayout?,
+                        startId: Int,
+                        endId: Int,
+                        progress: Float
+                    ) {
+                    }
+
+                    override fun onTransitionCompleted(
+                        motionLayout: MotionLayout?,
+                        currentId: Int
+                    ) {
+                        container.transitionToStart()
+                        if (currentId == R.id.ending_set) {
+
+                            startActivity(Intent(this@MainActivity, EditActivity::class.java))
+                        }
+                    }
+
+                    override fun onTransitionTrigger(
+                        p0: MotionLayout?,
+                        p1: Int,
+                        p2: Boolean,
+                        p3: Float
+                    ) {
+
+                    }
+                })
         }
     }
 
@@ -128,7 +171,6 @@ class MainActivity : AppCompatActivity(), MainView {
             this.getSharedPreferences(CHEK_STATE, Context.MODE_PRIVATE)
         return sharedPreferences.getBoolean(NIGHT_THEME, false)
     }
-
 }
 
 

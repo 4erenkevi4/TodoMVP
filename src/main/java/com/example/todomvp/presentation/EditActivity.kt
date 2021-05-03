@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.motion.widget.MotionLayout
 import com.arellomobile.mvp.presenter.InjectPresenter
 import com.example.todomvp.R
 import com.example.todomvp.data.model.Todo
@@ -21,13 +22,14 @@ class EditActivity : AppCompatActivity(), EditView {
     private lateinit var descriptionText: EditText
     private lateinit var todoEditText: EditText
     private lateinit var dateView: TextView
+    lateinit var container: MotionLayout
     private var textData: TextView? = null
 
     @InjectPresenter
     lateinit var editPresenter: EditPresentersImpl
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_edit)
+        setContentView(R.layout.activity_reduct)
         deleteFab = findViewById(R.id.deleteFab)
         doneFab = findViewById(R.id.doneFab)
         todoEditText = findViewById(R.id.todoEditText)
@@ -88,6 +90,8 @@ class EditActivity : AppCompatActivity(), EditView {
             updateTodo(id)
         }
         deleteFab.setOnClickListener {
+            container = findViewById(R.id.edit_motion_container)
+            container.transitionToEnd()
             deleteTodo(id)
         }
     }
@@ -109,9 +113,38 @@ class EditActivity : AppCompatActivity(), EditView {
     }
 
     override fun deleteTodo(id: Long) {
-        editPresenter.delete(id) { finish() }
-    }
+        container.setTransitionListener(
+            object : MotionLayout.TransitionListener {
+                override fun onTransitionStarted(p0: MotionLayout?, p1: Int, p2: Int) {
+                }
 
+                override fun onTransitionChange(
+                    motionLayout: MotionLayout?,
+                    startId: Int,
+                    endId: Int,
+                    progress: Float
+                ) {
+                }
+
+                override fun onTransitionCompleted(
+                    motionLayout: MotionLayout?,
+                    currentId: Int
+                ) {
+                    container.transitionToEnd()
+                    if (currentId == R.id.end) {
+                        editPresenter.delete(id) { finish() }
+                    }
+                }
+
+                override fun onTransitionTrigger(
+                    p0: MotionLayout?,
+                    p1: Int,
+                    p2: Boolean,
+                    p3: Float
+                ) {
+                }
+            })
+    }
 }
 
 

@@ -6,6 +6,7 @@ import com.example.todomvp.data.model.Todo
 interface MainPresenter {
 
     fun getAllTodos(): LiveData<List<Todo>>
+
     fun onTaskSwiped(position: Long)
 
 }

@@ -12,7 +12,6 @@ import com.example.todomvp.data.repository.TodoRepositoryImpl
 
 class MainPresentersImpl(application: Application) : MvpPresenter<MainView>(), MainPresenter {
     private val repository: TodoRepositoryImpl = TodoRepositoryImpl(application)
-    private val disposable: CompositeDisposable = CompositeDisposable()
     private val todo: LiveData<List<Todo>> by lazy {
         repository.getAllTodos()
     }
@@ -20,10 +19,9 @@ class MainPresentersImpl(application: Application) : MvpPresenter<MainView>(), M
     override fun getAllTodos() = todo
 
     override fun onTaskSwiped(position: Long) {
-        disposable.add(
             repository.delete(position).subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe()
-        )
+
     }
 }
